@@ -18,8 +18,13 @@ public class SolovayStrassen {
                 BigInteger ant = p.subtract(BigInteger.ONE);
 
                 BigInteger x_ = rand.modPow(ant.divide(BigInteger.valueOf(2)), p);
-                return x.compareTo(BigInteger.ZERO) != 0 && x.compareTo(x_) == 0;
+                if (x.compareTo(BigInteger.ZERO) != 0 && x.compareTo(x_) == 0) {
+                    continue;
+                } else {
+                    return false;
+                }
             }
+            return true;
         }
         return false;
     }
