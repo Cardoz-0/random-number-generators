@@ -1,19 +1,28 @@
-import prime.MillerRabin;
-import rng.BigIntegerRNG;
-import rng.BlumBlumShub;
-import rng.MersenneTwister;
-import rng.Xorshift;
+import prime.*;
+import rng.b64.*;
+import rng.big_integer.*;
+import rng.b32.*;
+import java.math.*;
+import java.security.*;
+import java.util.*;
 
-import java.math.BigInteger;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 
 public class RNG {
 
     public static void main(String[] args) {
+        List<Integer> sizes = Arrays.asList( 128, 168, 224, 256, 512, 1024, 2048, 4096);
+
+//        measurePrimeGenerationTime(new Xorshift(), sizes);
+        BigInteger64BitRngEngine engine_64 = new BigInteger64BitRngEngine();
+        BigInteger32BitRngEngine engine_32 = new BigInteger32BitRngEngine();
+
+        engine_64.start(12, new Xorshift());
+        engine_32.start(12, new MersenneTwister());
+
+//        measurePrimeGenerationTime(engine_64, sizes);
+        measurePrimeGenerationTime(engine_32, sizes);
+
+
 //        System.out.println(MillerRabin.checkPrimalty(BigInteger.valueOf(59), 5));
 //        measureGenerationTime(new Xorshift());
 //        measureGenerationTime(new BlumBlumShub());
@@ -28,13 +37,24 @@ public class RNG {
         System.out.println(crackMT19937Seed(sample,3600000, mt19937_seed + 3600000));
     }
 
-    public static void measureGenerationTime(BigIntegerRNG rng) {
-        List<Integer> sizes = Arrays.asList(40, 56, 80, 128, 168, 224, 256, 512, 1024, 2048, 4096);
+    public static void measureGenerationTime(BigIntegerRNG rng, List<Integer> sizes) {
         for (Integer size : sizes) {
-            rng.setSeed(new BigInteger(size, new SecureRandom()));
+            rng.setSeed(new SecureRandom().nextLong());
             long start = System.currentTimeMillis();
-            rng.nextInt();
-            System.out.printf("Size of %d takes %d milliseconds%n", size, (System.currentTimeMillis() - start) * 1000);
+            rng.nextValue(size);
+            System.out.printf("Size of %d takes %d milliseconds%n", size, (System.currentTimeMillis() - start));
+        }
+    }
+
+    public static void measurePrimeGenerationTime(BigIntegerRNG rng, List<Integer> sizes) {
+        for (Integer size : sizes) {
+            rng.setSeed(new SecureRandom().nextLong());
+            long start = System.currentTimeMillis();
+            BigInteger number = rng.nextValue(size);
+            while(!MillerRabin.checkPrimalty(number, 200, size)) {
+                number = rng.nextValue(size);
+            }
+            System.out.printf("PRIME Size of %d takes %d milliseconds%n", size, (System.currentTimeMillis() - start));
         }
     }
 

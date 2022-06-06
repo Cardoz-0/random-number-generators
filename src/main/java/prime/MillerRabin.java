@@ -1,7 +1,8 @@
 package prime;
 
-import rng.MersenneTwister;
-import rng.Xorshift;
+import rng.b32.MersenneTwister;
+import rng.b64.Xorshift;
+import rng.big_integer.BigInteger64BitRngEngine;
 
 import java.math.BigInteger;
 
@@ -37,12 +38,13 @@ public class MillerRabin {
         return true;
     }
 
-    public static boolean checkPrimalty(BigInteger number, int rounds) {
+    public static boolean checkPrimalty(BigInteger number, int rounds, int size) {
         BigInteger the_number_2 = BigInteger.valueOf(2); // I will not forgive java for making me do this
         BigInteger the_number_3 = BigInteger.valueOf(3);
         BigInteger the_number_4 = BigInteger.valueOf(4); // Like seriously?
 
-        Xorshift rng = new Xorshift(number);
+        BigInteger64BitRngEngine engine = new BigInteger64BitRngEngine();
+        engine.start(12, new Xorshift());
 
         if (number.compareTo(the_number_3) == 0) {
             return true;
@@ -58,7 +60,7 @@ public class MillerRabin {
             d = d.divide(the_number_2);
 
         for (int i = 0; i < rounds; i++) {
-            BigInteger rand = rng.nextInt().mod(number.subtract(the_number_2)).add(the_number_2); // Literally just d % 2 == 0... WTF JAVA??
+            BigInteger rand = engine.nextValue(size).mod(number.subtract(the_number_2)).add(the_number_2); // Literally just d % 2 == 0... WTF JAVA??
             BigInteger x = rand.modPow(d, number);
             if ((x.compareTo(BigInteger.ONE) == 0) || (x.compareTo(number.subtract(BigInteger.ONE)) == 0)) {
                 continue;

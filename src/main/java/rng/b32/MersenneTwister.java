@@ -1,6 +1,6 @@
-package rng;
+package rng.b32;
 
-public class MersenneTwister {
+public class MersenneTwister implements Rng32Bit{
     /**
      * word size (in number of bits)
      */
@@ -70,6 +70,13 @@ public class MersenneTwister {
      * @param seed
      */
     public MersenneTwister(int seed) {
+        setSeed(seed);
+    }
+    public MersenneTwister() {
+
+    }
+
+    public void setSeed(int seed) {
         mt = new int[N];
         mt[0] = seed;
         // Initializes the array
