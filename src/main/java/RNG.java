@@ -9,17 +9,18 @@ import java.util.*;
 
 public class RNG {
 
+    public static long SEED = 12345;
     public static void main(String[] args) {
-        List<Integer> sizes = Arrays.asList( 128, 168, 224, 256, 512, 1024, 2048, 4096);
+        List<Integer> sizes = Arrays.asList( 40, 56, 128, 168, 224, 256, 512, 1024, 2048, 4096);
 
         BigInteger64BitRngEngine engine_64 = new BigInteger64BitRngEngine();
         BigInteger32BitRngEngine engine_32 = new BigInteger32BitRngEngine();
 
-        engine_64.start(12, new Xorshift());
-        engine_32.start(12, new MersenneTwister());
+        engine_64.start(SEED, new Xorshift());
+        engine_32.start((int) SEED, new MersenneTwister());
 
-        measureGenerationTime(engine_32, sizes);
-        measureGenerationTime(engine_32, sizes);
+//        measureGenerationTime(engine_32, sizes);
+//        measureGenerationTime(engine_64, sizes);
 
         measurePrimeGenerationTime(engine_32, sizes);
         measurePrimeGenerationTime(engine_64, sizes);
@@ -28,20 +29,22 @@ public class RNG {
     }
 
     public static void measureGenerationTime(BigIntegerRNG rng, List<Integer> sizes) {
+        System.out.println("RNG");
         for (Integer size : sizes) {
             long start = System.currentTimeMillis();
             for (int i = 0; i < 1000000; i++) rng.nextValue(size);
-            System.out.printf("PRIME Size of %d takes %d milliseconds%n", size, (System.currentTimeMillis() - start));
+            System.out.printf("(%d, %d)\n", size, (System.currentTimeMillis() - start));
         }
     }
     public static void measurePrimeGenerationTime(BigIntegerRNG rng, List<Integer> sizes) {
+        System.out.println("PRIME");
         for (Integer size : sizes) {
             long start = System.currentTimeMillis();
             BigInteger number = rng.nextValue(size);
-            while(!MillerRabin.checkPrimalty(number, 200, size)) {
+            while(!SolovayStrassen.checkPrimalty(number, 200, size)) {
                 number = rng.nextValue(size);
             }
-            System.out.printf("PRIME Size of %d takes %d milliseconds%n", size, (System.currentTimeMillis() - start));
+            System.out.printf("(%d, %d)\n", size, (System.currentTimeMillis() - start));
         }
     }
     public static void crackMT19937Seed() {
